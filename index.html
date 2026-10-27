@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Diary | My Private Journal</title>
+    
+    <!-- External Libraries (CDNs) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts for Handwriting, Calligraphy, and Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@500;700&family=Indie+Flower&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for Themes */
+        :root {
+            --cover-color: #3b2818;
+            --cover-texture: linear-gradient(135deg, #2c1d11 0%, #3b2818 50%, #523722 100%);
+            --paper-color: #fdfaf3;
+            --line-color: #e2d9c8;
+            --spine-color: rgba(0, 0, 0, 0.25);
+            --text-color: #2c2523;
+            --accent-color: #8b5a2b;
+            --gold-accent: #d4af37;
+        }
+
+        [data-theme="vintage"] {
+            --cover-texture: linear-gradient(135deg, #4a3b2c 0%, #6b5742 50%, #8b7355 100%);
+            --paper-color: #f5eedc;
+            --line-color: #d8cbb5;
+            --text-color: #2e261f;
+            --accent-color: #795548;
+        }
+
+        [data-theme="minimal"] {
+            --cover-texture: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+            --paper-color: #ffffff;
+            --line-color: #f1f5f9;
+            --text-color: #1e293b;
+            --accent-color: #3b82f6;
+        }
+
+        [data-theme="aesthetic"] {
+            --cover-texture: linear-gradient(135deg, #be185d 0%, #db2777 50%, #f472b6 100%);
+            --paper-color: #fff5f7;
+            --line-color: #fbcfe8;
+            --text-color: #37232d;
+            --accent-color: #ec4899;
+        }
+
+        [data-theme="midnight"] {
+            --cover-texture: linear-gradient(135deg, #090d16 0%, #111827 50%, #1f2937 100%);
+            --paper-color: #1a202c;
+            --line-color: #2d3748;
+            --text-color: #e2e8f0;
+            --accent-color: #6366f1;
+        }
+
+        body {
+            background-color: #121214;
+            background-image: radial-gradient(circle at 50% 30%, #26262b 0%, #0e0e10 100%);
+            color: var(--text-color);
+            font-family: 'Lora', serif;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(140, 140, 140, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 140, 0.5); }
+        
+        /* Book Perspective Container */
+        .book-container {
+            perspective: 1800px;
+            width: 100%;
+            max-width: 1050px;
+            min-height: 640px;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 3D Realistic Book Cover */
+        .cover {
+            background: var(--cover-texture);
+            border-radius: 6px 18px 18px 6px;
+            box-shadow: 
+                inset 5px 0 12px rgba(0,0,0,0.6),
+                inset -3px 0 8px rgba(255,255,255,0.08),
+                12px 16px 40px rgba(0,0,0,0.7),
+                2px 4px 10px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
+            transform-origin: left center;
+            transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.6s ease;
+            transform-style: preserve-3d;
+            border-left: 12px solid rgba(0,0,0,0.4);
+        }
+
+        /* Decorative Book Spine Ribs */
+        .cover::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 1px 0 2px rgba(255,255,255,0.1);
+        }
+
+        /* Book Cover Stitched Border */
+        .cover-content {
+            border: 2px dashed rgba(212, 175, 55, 0.4);
+            border-radius: 10px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.2) 100%);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+        }
+
+        .cover.open {
+            transform: rotateY(-180deg);
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Open Diary Spread */
+        .diary-spread {
+            background-color: var(--paper-color);
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.6),
+                inset 45px 0 50px -35px rgba(0,0,0,0.25),
+                inset -5px 0 15px rgba(0,0,0,0.05);
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease 0.3s;
+            border-left: 6px solid rgba(0,0,0,0.2);
+        }
+
+        .diary-spread.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Paper Styles */
+        .paper-content {
+            height: calc(100vh - 270px);
+            min-height: 440px;
+            outline: none;
+            padding: 2rem 2.5rem;
+            line-height: 32px;
+            position: relative;
+            font-size: 1.125rem;
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+
+        @media (min-width: 768px) {
+            .paper-content {
+                padding: 2.5rem 4rem;
+            }
+        }
+
+        /* Ruled Paper */
+        .paper-ruled {
+            background-image: repeating-linear-gradient(transparent, transparent 31px, var(--line-color) 31px, var(--line-color) 32px);
+            background-attachment: local;
+            line-height: 32px !important;
+        }
+
+        /* Dotted Paper */
+        .paper-dotted {
+            background-image: radial-gradient(circle, var(--line-color) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            background-position: 12px 12px;
+            line-height: 32px;
+        }
+
+        /* Blank Paper */
+        .paper-blank {
+            background-image: none;
+            line-height: 32px;
+        }
+
+        /* Placeholder for contenteditable */
+        #editor:empty:before {
+            content: attr(placeholder);
+            color: #9ca3af;
+            font-style: italic;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* Editor inside elements */
+        .paper-content img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin: 1.2rem auto;
+            display: block;
+            border: 4px solid #fff;
+        }
+
+        .paper-content p { margin: 0 0 0.5rem 0; min-height: 32px; }
+        .paper-content h2 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 1rem 0 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        .paper-content blockquote {
+            border-left: 3px solid var(--accent-color);
+            margin: 0.8rem 0 0.8rem 1rem;
+            padding-left: 1rem;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .paper-content ul { list-style: disc inside; margin: 0.5rem 0; }
+        .paper-content ol { list-style: decimal inside; margin: 0.5rem 0; }
+        .paper-content hr { border: none; border-top: 1px dashed var(--line-color); margin: 1.5rem 0; }
+
+        /* Satin Bookmark Ribbon */
+        .bookmark {
+            position: absolute;
+            top: -4px;
+            right: 2.5rem;
+            width: 32px;
+            height: 75px;
+            background: linear-gradient(180deg, #c2410c 0%, #ea580c 70%, #9a3412 100%);
+            z-index: 30;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.35);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 14px), 0 100%);
+            cursor: pointer;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.75rem;
+            padding-bottom: 12px;
+        }
+
+        .bookmark:hover {
+            transform: translateY(6px);
+        }
+
+        .bookmark.bookmarked {
+            background: linear-gradient(180deg, #b45309 0%, #f59e0b 70%, #78350f 100%);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5);
+            color: #ffffff;
+        }
+
+        /* Stationery floating bar */
+        #stationery-toolbar {
+            box-shadow: 0 12px 35px rgba(0,0,0,0.22);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(5px);
+            opacity: 0; 
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1; 
+            pointer-events: auto;
+        }
+        .modal-content {
+            transform: scale(0.92) translateY(10px); 
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; 
+            bottom: 24px; 
+            right: 24px;
+            background: #1f2937; 
+            color: #f9fafb; 
+            padding: 12px 22px;
+            border-radius: 8px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+            transform: translateY(80px); 
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .sticker { display: inline-block; font-size: 1.4rem; user-select: none; margin: 0 0.25rem; transition: transform 0.15s ease; }
+        .sticker:hover { transform: scale(1.3); }
+
+        /* Print styling for PDF Export */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .print\:hidden { display: none !important; }
+            .print\:block { display: block !important; }
+            .book-container { box-shadow: none !important; max-width: 100% !important; }
+            .diary-spread { box-shadow: none !important; border: none !important; position: static !important; opacity: 1 !important; }
+            .paper-content { height: auto !important; min-height: 0 !important; overflow: visible !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body data-theme="classic" class="flex flex-col min-h-screen select-none">
+
+    <!-- Global App Header -->
+    <header class="w-full flex justify-between items-center px-6 py-3 text-white/80 z-40 print:hidden relative">
+        <div class="font-semibold text-lg flex items-center gap-2 cursor-pointer hover:text-white transition" onclick="App.closeDiary()">
+            <i class="fa-solid fa-book-bookmark text-amber-500"></i> 
+            <span class="tracking-wide font-['Playfair_Display']">Daily Diary</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button onclick="App.showModal('search-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Search Memories (Ctrl+F)">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </button>
+            <button onclick="App.showModal('calendar-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Calendar Archive">
+                <i class="fa-regular fa-calendar-days text-sm"></i>
+            </button>
+            <button onclick="App.showModal('settings-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Settings">
+                <i class="fa-solid fa-sliders text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-3 sm:p-6" id="diary-app">
+        
+        <div class="book-container" id="book-container">
+            
+            <!-- Book Cover View (Closed) -->
+            <div id="cover-view" class="cover w-full h-[620px] sm:h-[680px] flex items-center justify-center p-8 cursor-pointer shadow-2xl" onclick="App.openDiary()">
+                <div class="cover-content w-full h-full flex flex-col items-center justify-center p-8 text-center text-white/90 relative">
+                    
+                    <!-- Decorative Crest / Icon -->
+                    <div class="w-16 h-16 rounded-full border border-amber-400/40 flex items-center justify-center mb-6 text-amber-300/80 bg-white/5">
+                        <i class="fa-solid fa-feather-pointed text-2xl"></i>
+                    </div>
+
+                    <h1 id="ui-cover-title" class="text-4xl sm:text-6xl font-['Playfair_Display'] mb-4 italic tracking-wide text-amber-100 drop-shadow-md">My Private Diary</h1>
+                    <p id="ui-cover-subtitle" class="text-lg sm:text-xl font-light text-amber-200/80 mb-10 max-w-md">Thoughts, Memories, and Stories</p>
+                    
+                    <p id="ui-cover-author" class="text-xl sm:text-2xl font-['Caveat'] text-amber-300/90 mt-auto">By Me</p>
+                    
+                    <div class="mt-8 px-7 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition duration-300 backdrop-blur-sm border border-amber-300/30 flex items-center gap-2 text-sm text-amber-100 shadow-lg">
+                        <i class="fa-solid fa-book-open"></i> Click to Open Diary
+                    </div>
+                </div>
+            </div>
+
+            <!-- Open Diary Spread View -->
+            <div id="open-view" class="diary-spread w-full h-full flex flex-col">
+                
+                <!-- Satin Ribbon Bookmark (Clickable: Toggles Favorite) -->
+                <div class="bookmark print:hidden" id="bookmark-ribbon" title="Bookmark this entry" onclick="App.toggleBookmark()">
+                    <i class="fa-solid fa-star text-xs" id="bookmark-icon"></i>
+                </div>
+
+                <!-- Floating Stationery Drawer -->
+                <div id="stationery-toolbar" class="hidden absolute top-20 right-4 sm:right-8 w-max max-w-[92vw] bg-white/95 backdrop-blur-md shadow-2xl border border-neutral-200 rounded-xl z-40 print:hidden p-3 flex-col gap-2 transition-all">
+                    <!-- Row 1: Typography & Tools -->
+                    <div class="flex items-center gap-1.5 border-b pb-2 mb-1 border-neutral-200 flex-wrap">
+                        <select onchange="Editor.format('fontName', this.value)" class="p-1 rounded bg-neutral-100 border border-neutral-300 text-xs focus:outline-none text-neutral-700">
+                            <option value="Lora">Serif (Lora)</option>
+                            <option value="Inter">Clean (Inter)</option>
+                            <option value="Caveat">Handwriting (Caveat)</option>
+                            <option value="'Dancing Script'">Cursive (Dancing)</option>
+                            <option value="'Courier New'">Typewriter</option>
+                        </select>
+                        <select onchange="Editor.format('fontSize', this.value)" class="p-1 rounded bg-neutral-100 border border-neutral-300 text-xs focus:outline-none w-16 text-neutral-700">
+                            <option value="3">Normal</option>
+                            <option value="4">Medium</option>
+                            <option value="5">Large</option>
+                            <option value="6">Heading</option>
+                        </select>
+                        <button onclick="Editor.format('formatBlock', '<h2>')" class="px-2 py-1 rounded text-neutral-700 hover:bg-neutral-100 text-xs font-bold" title="Subheading">H2</button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        <button onclick="Editor.format('undo')" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button onclick="Editor.format('redo')" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        <button onclick="App.exportPDF()" class="w-7 h-7 rounded text-neutral-700 hover:text-red-600 hover:bg-red-50 text-xs" title="Export Entry to PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                        <button onclick="App.exportMarkdown()" class="w-7 h-7 rounded text-neutral-700 hover:text-blue-600 hover:bg-blue-50 text-xs" title="Export as Markdown (.md)"><i class="fa-brands fa-markdown"></i></button>
+                        <button onclick="App.toggleFullscreen()" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+
+                    <!-- Row 2: Inks, Highlighters, Media & Formatting -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button onclick="Editor.format('bold')" class="w-7 h-7 rounded font-bold text-sm hover:bg-neutral-100 text-neutral-800">B</button>
+                        <button onclick="Editor.format('italic')" class="w-7 h-7 rounded italic text-sm hover:bg-neutral-100 text-neutral-800">I</button>
+                        <button onclick="Editor.format('underline')" class="w-7 h-7 rounded underline text-sm hover:bg-neutral-100 text-neutral-800">U</button>
+                        <button onclick="Editor.format('strikeThrough')" class="w-7 h-7 rounded line-through text-sm hover:bg-neutral-100 text-neutral-800">S</button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        
+                        <!-- Fountain Pen Inks -->
+                        <button onclick="Editor.format('foreColor', '#1e293b')" class="w-5 h-5 rounded-full bg-slate-900 border border-neutral-300 shadow-sm hover:scale-125 transition" title="Black Ink"></button>
+                        <button onclick="Editor.format('foreColor', '#1d4ed8')" class="w-5 h-5 rounded-full bg-blue-700 border border-neutral-300 shadow-sm hover:scale-125 transition" title="Royal Blue Ink"></button>
+                        <button onclick="Editor.format('foreColor', '#b91c1c')" class="w-5 h-5 rounded-full bg-red-700 border border-neutral-300 shadow-sm hover:scale-125 transition" title="Burgundy Ink"></button>
+                        <button onclick="Editor.format('foreColor', '#15803d')" class="w-5 h-5 rounded-full bg-emerald-700 border border-neutral-300 shadow-sm hover:scale-125 transition" title="Forest Green Ink"></button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        
+                        <!-- Highlighters -->
+                        <button onclick="Editor.format('hiliteColor', '#fef08a')" class="w-6 h-6 rounded bg-yellow-200 border border-yellow-300 text-yellow-800 text-xs flex items-center justify-center hover:scale-110 transition" title="Yellow Highlighter"><i class="fa-solid fa-highlighter text-[10px]"></i></button>
+                        <button onclick="Editor.format('hiliteColor', '#fbcfe8')" class="w-6 h-6 rounded bg-pink-200 border border-pink-300 text-pink-800 text-xs flex items-center justify-center hover:scale-110 transition" title="Pink Highlighter"><i class="fa-solid fa-highlighter text-[10px]"></i></button>
+                        <button onclick="Editor.format('hiliteColor', '#bbf7d0')" class="w-6 h-6 rounded bg-emerald-200 border border-emerald-300 text-emerald-800 text-xs flex items-center justify-center hover:scale-110 transition" title="Mint Highlighter"><i class="fa-solid fa-highlighter text-[10px]"></i></button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        
+                        <!-- Lists & Quotes -->
+                        <button onclick="Editor.format('insertUnorderedList')" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Bullet List"><i class="fa-solid fa-list-ul"></i></button>
+                        <button onclick="Editor.format('insertOrderedList')" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Numbered List"><i class="fa-solid fa-list-ol"></i></button>
+                        <button onclick="Editor.insertBlockquote()" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Quote Block"><i class="fa-solid fa-quote-left"></i></button>
+                        <button onclick="Editor.format('insertHorizontalRule')" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Divider Line"><i class="fa-solid fa-minus"></i></button>
+                        
+                        <div class="w-px h-4 bg-neutral-300 mx-1"></div>
+                        
+                        <!-- Media & Stickers -->
+                        <button onclick="document.getElementById('photo-upload').click()" class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Insert Photo"><i class="fa-regular fa-image"></i></button>
+                        <input type="file" id="photo-upload" accept="image/*" class="hidden" onchange="Editor.insertPhoto(event)">
+                        
+                        <div class="relative group">
+                            <button class="w-7 h-7 rounded text-neutral-700 hover:bg-neutral-100 text-xs" title="Stickers & Stamps"><i class="fa-regular fa-face-smile"></i></button>
+                            <div class="absolute bottom-full right-0 mb-2 bg-white border border-neutral-200 rounded-lg shadow-xl p-2 hidden group-hover:flex gap-1 z-50">
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>🌸</span>')">🌸</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>✨</span>')">✨</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>❤️</span>')">❤️</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>⭐</span>')">⭐</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>🌿</span>')">🌿</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>☕</span>')">☕</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>📖</span>')">📖</span>
+                                <span class="sticker cursor-pointer" onclick="Editor.insertHTML('<span class=\'sticker\'>🌙</span>')">🌙</span>
+                            </div>
+                        </div>
+
+                        <button onclick="Editor.format('removeFormat')" class="w-7 h-7 rounded text-neutral-500 hover:text-black hover:bg-neutral-100 text-xs" title="Clear Formatting"><i class="fa-solid fa-text-slash"></i></button>
+                    </div>
+                </div>
+
+                <!-- Page Header (Navigation & Date) -->
+                <div class="w-full flex flex-col px-6 sm:px-10 pt-5 pb-2 z-10 border-b border-neutral-200/50">
+                    <div class="w-full flex justify-between items-center">
+                        
+                        <!-- Left Navigation (Close & Previous) -->
+                        <div class="flex items-center gap-1.5 print:hidden">
+                            <button onclick="App.closeDiary()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Close Diary (Esc)">
+                                <i class="fa-solid fa-book"></i>
+                            </button>
+                            <button onclick="App.navigateEntry(1)" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Previous Entry (Older)">
+                                <i class="fa-solid fa-chevron-left text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Center: Date (Click to change date or open calendar) -->
+                        <div class="flex items-center gap-2 group cursor-pointer" onclick="App.openDatePicker()" title="Click to change entry date">
+                            <span id="entry-date-display" class="font-['Caveat'] text-2xl sm:text-3xl text-neutral-700 font-semibold group-hover:text-black transition">
+                                Today
+                            </span>
+                            <i class="fa-regular fa-calendar text-xs text-neutral-400 group-hover:text-neutral-700 transition"></i>
+                        </div>
+                        
+                        <!-- Right Navigation (New, Delete, Next, Stationery) -->
+                        <div class="flex items-center gap-1.5 print:hidden">
+                            <button onclick="App.createNewEntry()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="New Blank Entry (Ctrl+N)">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                            </button>
+                            <button onclick="App.navigateEntry(-1)" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Next Entry (Newer)">
+                                <i class="fa-solid fa-chevron-right text-sm"></i>
+                            </button>
+                            <button onclick="App.deleteCurrentEntry()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete Entry">
+                                <i class="fa-regular fa-trash-can text-sm"></i>
+                            </button>
+                            
+                            <div class="w-px h-5 bg-neutral-300 mx-1"></div>
+                            
+                            <button onclick="document.getElementById('stationery-toolbar').classList.toggle('hidden')" class="w-8 h-8 rounded-full bg-neutral-800 text-white shadow-md hover:bg-neutral-700 transition flex items-center justify-center hover:scale-105" title="Toggle Stationery Box">
+                                <i class="fa-solid fa-pen-nib text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Title and Mood Bar -->
+                    <div class="flex items-center gap-3 print:hidden mt-3">
+                        <input type="text" id="entry-title" placeholder="Give this memory a title..." class="text-xl sm:text-2xl font-bold font-['Playfair_Display'] bg-transparent border-none outline-none flex-grow placeholder-neutral-400/70 text-neutral-900" oninput="App.saveCurrentEntry()">
+                        
+                        <select id="entry-mood" class="bg-white/60 border border-neutral-300/80 rounded-lg px-2 py-1 text-sm outline-none cursor-pointer backdrop-blur-sm text-neutral-700 shadow-sm" onchange="App.saveCurrentEntry()">
+                            <option value="">Mood...</option>
+                            <option value="😊">😊 Happy</option>
+                            <option value="😌">😌 Peaceful</option>
+                            <option value="💖">💖 Grateful</option>
+                            <option value="🤩">🤩 Excited</option>
+                            <option value="☕">☕ Productive</option>
+                            <option value="🌿">🌿 Calm</option>
+                            <option value="😔">😔 Melancholy</option>
+                            <option value="😤">😤 Stressed</option>
+                            <option value="😴">😴 Exhausted</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Editor Area (Scrollable Paper) -->
+                <div class="flex-grow relative overflow-y-auto" id="pdf-content">
+                    
+                    <!-- Formatted Print/PDF Header -->
+                    <div class="hidden print:block text-center pt-8 pb-6 border-b border-neutral-300 mb-6" id="print-header">
+                        <h1 class="text-3xl font-bold font-['Playfair_Display'] text-neutral-900" id="print-title"></h1>
+                        <p class="font-['Caveat'] text-2xl text-neutral-600 mt-2" id="print-date"></p>
+                        <p class="text-lg mt-1" id="print-mood"></p>
+                    </div>
+                    
+                    <!-- Contenteditable Main Editor -->
+                    <div id="editor" class="paper-content paper-blank select-text" contenteditable="true" spellcheck="false" placeholder="Dear Diary, write down your thoughts, stories, and inspirations..."></div>
+                </div>
+                
+                <!-- Bottom Page Status Bar -->
+                <div class="w-full flex justify-between items-center px-6 sm:px-10 py-3 text-xs text-neutral-500 font-sans z-10 print:hidden border-t border-neutral-200/50 bg-black/[0.01]">
+                    <span id="page-num-left" class="font-medium">Page 1</span>
+                    
+                    <div class="flex items-center gap-3">
+                        <span id="word-count" class="italic opacity-80">0 words</span>
+                        <span class="opacity-40">•</span>
+                        <span id="save-status" class="italic opacity-80 text-emerald-700 font-medium">All changes saved</span>
+                    </div>
+
+                    <span id="page-num-right" class="font-medium"></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-[100] p-4">
+        <div class="modal-content bg-white text-neutral-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200">
+            <div class="flex justify-between items-center px-6 py-4 border-b bg-neutral-50">
+                <h2 class="text-lg font-bold font-['Playfair_Display'] text-neutral-900">Diary Settings</h2>
+                <button onclick="App.hideModal('settings-modal')" class="text-neutral-400 hover:text-black transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Cover Title</label>
+                    <input type="text" id="set-title" class="w-full border border-neutral-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-neutral-800 outline-none" onchange="Settings.update()">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Subtitle</label>
+                    <input type="text" id="set-subtitle" class="w-full border border-neutral-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-neutral-800 outline-none" onchange="Settings.update()">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Author</label>
+                    <input type="text" id="set-author" class="w-full border border-neutral-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-neutral-800 outline-none" onchange="Settings.update()">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Theme</label>
+                        <select id="set-theme" class="w-full border border-neutral-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-neutral-800 outline-none bg-white" onchange="Settings.update()">
+                            <option value="classic">Classic Leather</option>
+                            <option value="vintage">Vintage Antiquity</option>
+                            <option value="minimal">Minimal Slate</option>
+                            <option value="aesthetic">Sakura Pink</option>
+                            <option value="midnight">Midnight Dark</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Paper Texture</label>
+                        <select id="set-paper" class="w-full border border-neutral-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-neutral-800 outline-none bg-white" onchange="Settings.update()">
+                            <option value="ruled">Ruled / Lined</option>
+                            <option value="dotted">Dotted Grid</option>
+                            <option value="blank">Blank Parchment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50/70 border border-amber-200/70 p-4 rounded-xl text-xs text-amber-900 leading-relaxed">
+                    <p class="font-semibold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-amber-700"></i> Privacy Guarantee</p>
+                    <p>Your diary entries and images are stored strictly in your browser's IndexedDB. No server tracking, no telemetry, and 100% offline functionality.</p>
+                </div>
+
+                <div class="pt-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Data Backup & Restore</label>
+                    <div class="flex gap-2">
+                        <button onclick="App.exportJSON()" class="flex-1 bg-neutral-900 text-white text-xs font-medium py-2.5 rounded-lg hover:bg-neutral-800 transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-download"></i> Backup (JSON)
+                        </button>
+                        <button onclick="document.getElementById('import-upload').click()" class="flex-1 bg-white border border-neutral-300 text-neutral-700 text-xs font-medium py-2.5 rounded-lg hover:bg-neutral-50 transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-upload"></i> Restore
+                        </button>
+                        <input type="file" id="import-upload" accept=".json" class="hidden" onchange="App.importJSON(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Archive Modal -->
+    <div id="calendar-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-[100] p-4">
+        <div class="modal-content bg-white text-neutral-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-neutral-200">
+            <div class="flex justify-between items-center px-5 py-4 border-b bg-neutral-50">
+                <h2 class="text-base font-bold font-['Playfair_Display'] text-neutral-900">Archive & Calendar</h2>
+                <button onclick="App.hideModal('calendar-modal')" class="text-neutral-400 hover:text-black transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <button onclick="Calendar.changeMonth(-1)" class="w-7 h-7 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                    <h3 id="cal-month-year" class="font-bold text-sm text-neutral-800 font-['Playfair_Display']">October 2026</h3>
+                    <button onclick="Calendar.changeMonth(1)" class="w-7 h-7 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-neutral-400 mb-1">
+                    <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                </div>
+                
+                <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-xs">
+                    <!-- Calendar cells rendered by JS -->
+                </div>
+                
+                <div class="mt-4 pt-3 border-t border-neutral-200 max-h-48 overflow-y-auto" id="cal-entry-list">
+                    <!-- Entries for selected date rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deep Search Modal -->
+    <div id="search-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-[100] p-4">
+        <div class="modal-content bg-white text-neutral-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-neutral-200">
+            <div class="flex justify-between items-center px-6 py-4 border-b bg-neutral-50">
+                <h2 class="text-base font-bold font-['Playfair_Display'] text-neutral-900">Search Diary Memories</h2>
+                <button onclick="App.hideModal('search-modal')" class="text-neutral-400 hover:text-black transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-5">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-neutral-400 text-sm"></i>
+                    <input type="text" id="search-input" oninput="Search.perform()" class="w-full border border-neutral-300 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-800 transition" placeholder="Search entries, keywords, thoughts...">
+                </div>
+                
+                <div id="search-results" class="mt-4 space-y-2 max-h-72 overflow-y-auto text-sm pr-1">
+                    <p class="text-neutral-400 text-center py-6 text-xs">Type at least 2 characters to search across all entries...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div id="date-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-[100] p-4">
+        <div class="modal-content bg-white text-neutral-800 rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden border border-neutral-200 p-5">
+            <h3 class="text-base font-bold mb-3 font-['Playfair_Display']">Change Entry Date</h3>
+            <p class="text-xs text-neutral-500 mb-3">Assign this entry to a past or specific date:</p>
+            <input type="date" id="entry-date-picker-input" class="w-full border border-neutral-300 rounded-lg p-2 text-sm outline-none mb-4">
+            
+            <div class="flex justify-end gap-2">
+                <button onclick="App.hideModal('date-modal')" class="px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 rounded-lg">Cancel</button>
+                <button onclick="App.applyDatePickerChange()" class="px-4 py-1.5 text-xs bg-neutral-900 text-white rounded-lg hover:bg-neutral-800">Apply Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        /**
+         * --- LOCAL DATABASE (IndexedDB) ---
+         * Handles persistence of rich text, settings, and high-res photo blobs securely in browser.
+         */
+        const DB = (function() {
+            const DB_NAME = 'PersonalDiaryDB';
+            const DB_VERSION = 2;
+            let db = null;
+
+            const init = () => new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains('entries')) {
+                        db.createObjectStore('entries', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('images')) {
+                        db.createObjectStore('images', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('settings')) {
+                        db.createObjectStore('settings', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (e) => { db = e.target.result; resolve(); };
+                request.onerror = (e) => reject(e);
+            });
+
+            const getStore = (storeName, mode = 'readonly') => {
+                return db.transaction(storeName, mode).objectStore(storeName);
+            };
+
+            return {
+                init,
+                save: (store, data) => new Promise((resolve, reject) => {
+                    const request = getStore(store, 'readwrite').put(data);
+                    request.onsuccess = () => resolve(data);
+                    request.onerror = (e) => reject(e);
+                }),
+                get: (store, id) => new Promise((resolve, reject) => {
+                    const request = getStore(store).get(id);
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject(e);
+                }),
+                getAll: (store) => new Promise((resolve, reject) => {
+                    const request = getStore(store).getAll();
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject(e);
+                }),
+                delete: (store, id) => new Promise((resolve, reject) => {
+                    const request = getStore(store, 'readwrite').delete(id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = (e) => reject(e);
+                }),
+                clear: (store) => new Promise((resolve, reject) => {
+                    const request = getStore(store, 'readwrite').clear();
+                    request.onsuccess = () => resolve();
+                    request.onerror = (e) => reject(e);
+                })
+            };
+        })();
+
+        /**
+         * --- SETTINGS MANAGER ---
+         */
+        const Settings = (function() {
+            let config = {
+                title: "My Private Diary",
+                subtitle: "Thoughts, Memories, and Stories",
+                author: "By Me",
+                theme: "classic",
+                paper: "blank"
+            };
+
+            const load = async () => {
+                const saved = await DB.get('settings', 'main_config');
+                if (saved) config = { ...config, ...saved };
+                apply();
+            };
+
+            const apply = () => {
+                document.getElementById('ui-cover-title').textContent = config.title;
+                document.getElementById('ui-cover-subtitle').textContent = config.subtitle;
+                document.getElementById('ui-cover-author').textContent = config.author;
+                
+                document.getElementById('set-title').value = config.title;
+                document.getElementById('set-subtitle').value = config.subtitle;
+                document.getElementById('set-author').value = config.author;
+                document.getElementById('set-theme').value = config.theme;
+                document.getElementById('set-paper').value = config.paper;
+
+                document.body.setAttribute('data-theme', config.theme);
+                
+                const editor = document.getElementById('editor');
+                editor.className = `paper-content paper-${config.paper}`;
+            };
+
+            const update = async () => {
+                config.title = document.getElementById('set-title').value.trim() || "My Private Diary";
+                config.subtitle = document.getElementById('set-subtitle').value.trim() || "Thoughts, Memories, and Stories";
+                config.author = document.getElementById('set-author').value.trim() || "By Me";
+                config.theme = document.getElementById('set-theme').value;
+                config.paper = document.getElementById('set-paper').value;
+                
+                apply();
+                await DB.save('settings', { id: 'main_config', ...config });
+                App.showToast("Settings updated");
+            };
+
+            return { load, apply, update, getConfig: () => config };
+        })();
+
+        /**
+         * --- EDITOR & CONTENT FORMATTING ---
+         */
+        const Editor = (function() {
+            const el = document.getElementById('editor');
+            let saveTimeout = null;
+            const blobCache = new Map();
+
+            const updateWordCount = () => {
+                const text = el.innerText || "";
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+                document.getElementById('word-count').textContent = words + (words === 1 ? " word" : " words");
+            };
+
+            // Auto-save on input with debouncing
+            el.addEventListener('input', () => {
+                document.getElementById('save-status').textContent = 'Saving...';
+                document.getElementById('save-status').className = 'italic opacity-80 text-amber-600 font-medium';
+                updateWordCount();
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => App.saveCurrentEntry(), 800);
+            });
+
+            const format = (command, value = null) => {
+                document.execCommand(command, false, value);
+                el.focus();
+                App.saveCurrentEntry();
+            };
+
+            const insertHTML = (html) => {
+                document.execCommand('insertHTML', false, html);
+                el.focus();
+                App.saveCurrentEntry();
+            };
+
+            const insertBlockquote = () => {
+                insertHTML('<blockquote>Memorable thought or quote...</blockquote><p></p>');
+            };
+
+            // Image handling (File -> Blob -> IDB -> ObjectURL)
+            const insertPhoto = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+                
+                await DB.save('images', { id: imgId, blob: file, type: file.type });
+                
+                const url = URL.createObjectURL(file);
+                blobCache.set(imgId, url);
+
+                const imgHTML = `<p><img src="${url}" data-img-id="${imgId}" alt="Diary photo"></p><p></p>`;
+                insertHTML(imgHTML);
+                e.target.value = '';
+            };
+
+            const getCleanHTML = () => {
+                const clone = el.cloneNode(true);
+                const imgs = clone.querySelectorAll('img[data-img-id]');
+                imgs.forEach(img => {
+                    img.setAttribute('src', '');
+                });
+                return clone.innerHTML;
+            };
+
+            const setHTML = async (html) => {
+                el.innerHTML = html || '';
+                
+                const imgs = el.querySelectorAll('img[data-img-id]');
+                for (let img of imgs) {
+                    const id = img.getAttribute('data-img-id');
+                    if (blobCache.has(id)) {
+                        img.src = blobCache.get(id);
+                    } else {
+                        try {
+                            const data = await DB.get('images', id);
+                            if (data && data.blob) {
+                                const url = URL.createObjectURL(data.blob);
+                                blobCache.set(id, url);
+                                img.src = url;
+                            } else {
+                                img.alt = "Image missing";
+                            }
+                        } catch(err) {
+                            console.error("Failed to load image", id);
+                        }
+                    }
+                }
+                updateWordCount();
+            };
+
+            return { el, format, insertHTML, insertBlockquote, insertPhoto, getCleanHTML, setHTML, updateWordCount };
+        })();
+
+        /**
+         * --- CORE APPLICATION MODULE ---
+         */
+        const App = (function() {
+            let entries = [];
+            let currentEntryId = null;
+
+            const formatDate = (dateObj) => {
+                return new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(dateObj);
+            };
+
+            const init = async () => {
+                try {
+                    await DB.init();
+                    await Settings.load();
+                    await refreshEntriesList();
+                    
+                    // Setup keyboard shortcuts
+                    window.addEventListener('keydown', (e) => {
+                        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                            e.preventDefault();
+                            saveCurrentEntry();
+                            showToast("Entry saved");
+                        }
+                        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+                            e.preventDefault();
+                            createNewEntry();
+                        }
+                        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                            e.preventDefault();
+                            showModal('search-modal');
+                            document.getElementById('search-input').focus();
+                        }
+                        if (e.key === 'Escape') {
+                            hideAllModals();
+                            document.getElementById('stationery-toolbar').classList.add('hidden');
+                        }
+                    });
+                } catch(e) {
+                    showToast("Error initializing storage.");
+                    console.error(e);
+                }
+            };
+
+            const refreshEntriesList = async () => {
+                const all = await DB.getAll('entries');
+                entries = all.sort((a, b) => b.createdAt - a.createdAt).map(e => ({
+                    id: e.id,
+                    createdAt: e.createdAt,
+                    dateStr: formatDate(new Date(e.createdAt)),
+                    title: e.title || '',
+                    mood: e.mood || '',
+                    isBookmarked: !!e.isBookmarked,
+                    snippet: (e.content || '').replace(/<[^>]+>/g, ' ').substring(0, 100)
+                }));
+                Calendar.render();
+                updatePageNumberDisplay();
+            };
+
+            const openDiary = async () => {
+                document.getElementById('cover-view').classList.add('open');
+                document.getElementById('open-view').classList.add('active');
+                
+                if (!currentEntryId) {
+                    if (entries.length > 0) {
+                        await loadEntry(entries[0].id);
+                    } else {
+                        await createNewEntry();
+                    }
+                } else {
+                    await loadEntry(currentEntryId);
+                }
+            };
+
+            const closeDiary = () => {
+                document.getElementById('cover-view').classList.remove('open');
+                document.getElementById('open-view').classList.remove('active');
+                document.getElementById('stationery-toolbar').classList.add('hidden');
+            };
+
+            const loadEntry = async (id) => {
+                const entry = await DB.get('entries', id);
+                if (!entry) return;
+                currentEntryId = id;
+                
+                document.getElementById('entry-date-display').textContent = formatDate(new Date(entry.createdAt));
+                document.getElementById('entry-title').value = entry.title || '';
+                document.getElementById('entry-mood').value = entry.mood || '';
+                
+                updateBookmarkVisual(entry.isBookmarked);
+                await Editor.setHTML(entry.content);
+                
+                const saveStatus = document.getElementById('save-status');
+                saveStatus.textContent = 'All changes saved';
+                saveStatus.className = 'italic opacity-80 text-emerald-700 font-medium';
+                
+                updatePageNumberDisplay();
+            };
+
+            const createNewEntry = async (customDate = null) => {
+                const timestamp = customDate ? customDate.getTime() : Date.now();
+                const id = 'entry_' + timestamp + '_' + Math.random().toString(36).substr(2, 6);
+                const newEntry = {
+                    id: id,
+                    createdAt: timestamp,
+                    content: '',
+                    title: '',
+                    mood: '',
+                    isBookmarked: false
+                };
+                
+                await DB.save('entries', newEntry);
+                await refreshEntriesList();
+                await loadEntry(id);
+                Editor.el.focus();
+                showToast("New blank page ready");
+            };
+
+            const saveCurrentEntry = async () => {
+                if (!currentEntryId) return;
+                const html = Editor.getCleanHTML();
+                const existing = await DB.get('entries', currentEntryId);
+                if (existing) {
+                    existing.content = html;
+                    existing.title = document.getElementById('entry-title').value;
+                    existing.mood = document.getElementById('entry-mood').value;
+                    existing.updatedAt = Date.now();
+                    await DB.save('entries', existing);
+                    
+                    const saveStatus = document.getElementById('save-status');
+                    saveStatus.textContent = 'All changes saved';
+                    saveStatus.className = 'italic opacity-80 text-emerald-700 font-medium';
+                    
+                    const idx = entries.findIndex(e => e.id === currentEntryId);
+                    if (idx > -1) {
+                        entries[idx].title = existing.title;
+                        entries[idx].mood = existing.mood;
+                        entries[idx].snippet = html.replace(/<[^>]+>/g, ' ').substring(0, 100);
+                    }
+                    Calendar.render();
+                }
+            };
+
+            const deleteCurrentEntry = async () => {
+                if (!currentEntryId) return;
+                if (!confirm("Are you sure you want to permanently delete this diary entry?")) return;
+                
+                const idToDelete = currentEntryId;
+                await DB.delete('entries', idToDelete);
+                showToast("Entry deleted");
+                
+                await refreshEntriesList();
+                if (entries.length > 0) {
+                    await loadEntry(entries[0].id);
+                } else {
+                    await createNewEntry();
+                }
+            };
+
+            const navigateEntry = async (dir) => {
+                if (entries.length === 0) return;
+                const currentIndex = entries.findIndex(e => e.id === currentEntryId);
+                let newIndex = currentIndex + dir;
+                
+                if (newIndex >= 0 && newIndex < entries.length) {
+                    await loadEntry(entries[newIndex].id);
+                } else {
+                    showToast(dir > 0 ? "You've reached the earliest entry." : "You are on the latest entry.");
+                }
+            };
+
+            const toggleBookmark = async () => {
+                if (!currentEntryId) return;
+                const entry = await DB.get('entries', currentEntryId);
+                if (!entry) return;
+                
+                entry.isBookmarked = !entry.isBookmarked;
+                await DB.save('entries', entry);
+                
+                const idx = entries.findIndex(e => e.id === currentEntryId);
+                if (idx > -1) entries[idx].isBookmarked = entry.isBookmarked;
+                
+                updateBookmarkVisual(entry.isBookmarked);
+                showToast(entry.isBookmarked ? "Entry bookmarked! ⭐" : "Bookmark removed");
+            };
+
+            const updateBookmarkVisual = (isBookmarked) => {
+                const ribbon = document.getElementById('bookmark-ribbon');
+                if (isBookmarked) {
+                    ribbon.classList.add('bookmarked');
+                } else {
+                    ribbon.classList.remove('bookmarked');
+                }
+            };
+
+            const updatePageNumberDisplay = () => {
+                const total = entries.length;
+                const currentIndex = entries.findIndex(e => e.id === currentEntryId);
+                if (currentIndex === -1 || total === 0) {
+                    document.getElementById('page-num-left').textContent = "Page 1";
+                    document.getElementById('page-num-right').textContent = "";
+                    return;
+                }
+                const pageNum = total - currentIndex;
+                document.getElementById('page-num-left').textContent = `Page ${pageNum}`;
+                document.getElementById('page-num-right').textContent = `of ${total}`;
+            };
+
+            // Date Picker Handling
+            const openDatePicker = () => {
+                if (!currentEntryId) return;
+                const entry = entries.find(e => e.id === currentEntryId);
+                if (entry) {
+                    const d = new Date(entry.createdAt);
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    document.getElementById('entry-date-picker-input').value = `${yyyy}-${mm}-${dd}`;
+                    showModal('date-modal');
+                }
+            };
+
+            const applyDatePickerChange = async () => {
+                const val = document.getElementById('entry-date-picker-input').value;
+                if (!val || !currentEntryId) return;
+                
+                const [yyyy, mm, dd] = val.split('-').map(Number);
+                const newTimestamp = new Date(yyyy, mm - 1, dd, 12, 0, 0).getTime();
+                
+                const existing = await DB.get('entries', currentEntryId);
+                if (existing) {
+                    existing.createdAt = newTimestamp;
+                    existing.updatedAt = Date.now();
+                    await DB.save('entries', existing);
+                    await refreshEntriesList();
+                    await loadEntry(currentEntryId);
+                    hideModal('date-modal');
+                    showToast("Entry date updated");
+                }
+            };
+
+            // PDF Export
+            const exportPDF = () => {
+                showToast("Generating PDF... Please wait.");
+                const element = document.getElementById('pdf-content');
+                
+                document.getElementById('print-date').textContent = document.getElementById('entry-date-display').textContent;
+                document.getElementById('print-title').textContent = document.getElementById('entry-title').value || "Untitled Entry";
+                document.getElementById('print-mood').textContent = document.getElementById('entry-mood').value;
+                
+                const opt = {
+                    margin:       14,
+                    filename:     `Diary-${document.getElementById('entry-date-display').textContent.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    showToast("PDF Downloaded successfully!");
+                }).catch(err => {
+                    console.error(err);
+                    showToast("PDF generation failed.");
+                });
+            };
+
+            // Markdown Export
+            const exportMarkdown = async () => {
+                if (!currentEntryId) return;
+                const entry = await DB.get('entries', currentEntryId);
+                if (!entry) return;
+
+                const dateStr = formatDate(new Date(entry.createdAt));
+                const title = entry.title || "Untitled Entry";
+                const mood = entry.mood ? `Mood: ${entry.mood}\n` : '';
+                
+                // Simple HTML to Markdown conversion
+                let mdContent = entry.content || "";
+                mdContent = mdContent.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n');
+                mdContent = mdContent.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+                mdContent = mdContent.replace(/<b>(.*?)<\/b>/gi, '**$1**');
+                mdContent = mdContent.replace(/<em>(.*?)<\/em>/gi, '*$1*');
+                mdContent = mdContent.replace(/<i>(.*?)<\/i>/gi, '*$1*');
+                mdContent = mdContent.replace(/<blockquote>(.*?)<\/blockquote>/gi, '> $1\n');
+                mdContent = mdContent.replace(/<p>(.*?)<\/p>/gi, '$1\n\n');
+                mdContent = mdContent.replace(/<br\s*[\/]?>/gi, '\n');
+                mdContent = mdContent.replace(/<[^>]+>/g, '');
+
+                const mdFull = `# ${title}\n*${dateStr}*\n${mood}\n---\n\n${mdContent}`;
+                const blob = new Blob([mdFull], { type: 'text/markdown;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Diary-${dateStr.replace(/[^a-zA-Z0-9]/g, '-')}.md`;
+                a.click();
+                showToast("Markdown exported!");
+            };
+
+            // JSON Backup
+            const exportJSON = async () => {
+                showToast("Exporting backup...");
+                const allEntries = await DB.getAll('entries');
+                const config = Settings.getConfig();
+                const allImages = await DB.getAll('images');
+                const imagesBase64 = [];
+                
+                for (let img of allImages) {
+                    if (img.blob) {
+                        const base64 = await new Promise((res) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => res(reader.result);
+                            reader.readAsDataURL(img.blob);
+                        });
+                        imagesBase64.push({ id: img.id, data: base64, type: img.type });
+                    }
+                }
+
+                const backup = {
+                    version: 2,
+                    timestamp: Date.now(),
+                    settings: config,
+                    entries: allEntries,
+                    images: imagesBase64
+                };
+
+                const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Diary-Backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                showToast("Backup exported successfully!");
+            };
+
+            // JSON Restore
+            const importJSON = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (!data.entries) throw new Error("Invalid diary backup file structure.");
+
+                        if (confirm("Restore this backup? Existing entries will be merged.")) {
+                            if (data.settings) {
+                                await DB.save('settings', { id: 'main_config', ...data.settings });
+                                await Settings.load();
+                            }
+
+                            for (let entry of data.entries) {
+                                await DB.save('entries', entry);
+                            }
+
+                            if (data.images) {
+                                for (let img of data.images) {
+                                    const res = await fetch(img.data);
+                                    const blob = await res.blob();
+                                    await DB.save('images', { id: img.id, blob: blob, type: img.type });
+                                }
+                            }
+
+                            await refreshEntriesList();
+                            showToast("Backup restored successfully!");
+                            hideModal('settings-modal');
+                            if (entries.length > 0) loadEntry(entries[0].id);
+                        }
+                    } catch (err) {
+                        alert("Failed to restore backup: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            };
+
+            // UI Modal Utilities
+            const showModal = (id) => document.getElementById(id).classList.add('active');
+            const hideModal = (id) => document.getElementById(id).classList.remove('active');
+            const hideAllModals = () => {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            };
+            
+            const toggleFullscreen = () => {
+                const spread = document.getElementById('open-view');
+                const isFull = spread.classList.toggle('fixed');
+                spread.classList.toggle('z-[100]');
+                
+                if (isFull) {
+                    spread.style.borderRadius = '0';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    spread.style.borderRadius = '';
+                    document.body.style.overflow = '';
+                }
+            };
+            
+            let toastTimer = null;
+            const showToast = (msg) => {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-message').textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+            };
+
+            return {
+                init, openDiary, closeDiary, createNewEntry, loadEntry, saveCurrentEntry,
+                deleteCurrentEntry, navigateEntry, toggleBookmark, openDatePicker, applyDatePickerChange,
+                exportPDF, exportMarkdown, exportJSON, importJSON,
+                showModal, hideModal, showToast, toggleFullscreen, getEntries: () => entries
+            };
+        })();
+
+        /**
+         * --- CALENDAR ARCHIVE MODULE ---
+         */
+        const Calendar = (function() {
+            let currentMonth = new Date().getMonth();
+            let currentYear = new Date().getFullYear();
+
+            const render = () => {
+                const grid = document.getElementById('cal-grid');
+                if (!grid) return;
+                grid.innerHTML = '';
+                
+                const monthYear = document.getElementById('cal-month-year');
+                monthYear.textContent = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                const entries = App.getEntries();
+                
+                for (let i = 0; i < firstDay; i++) {
+                    grid.innerHTML += `<div class="h-8"></div>`;
+                }
+
+                const today = new Date();
+                const isCurrentMonthYear = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                                        .format(new Date(currentYear, currentMonth, i));
+                    
+                    const dayEntries = entries.filter(e => e.dateStr === dateStr);
+                    const hasEntry = dayEntries.length > 0;
+                    const isToday = isCurrentMonthYear && today.getDate() === i;
+
+                    let btnClass = 'text-neutral-600 hover:bg-neutral-100 rounded-full h-8 flex items-center justify-center cursor-pointer transition';
+                    if (hasEntry) {
+                        btnClass = 'bg-neutral-900 text-white font-bold rounded-full h-8 flex items-center justify-center cursor-pointer hover:bg-neutral-700 shadow-sm transition';
+                    } else if (isToday) {
+                        btnClass = 'border border-neutral-800 text-neutral-900 font-bold rounded-full h-8 flex items-center justify-center cursor-pointer hover:bg-neutral-100 transition';
+                    }
+
+                    grid.innerHTML += `<div class="${btnClass}" onclick="Calendar.selectDay('${dateStr}', ${currentYear}, ${currentMonth}, ${i})">${i}</div>`;
+                }
+            };
+
+            const changeMonth = (dir) => {
+                currentMonth += dir;
+                if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                render();
+            };
+
+            const selectDay = (dateStr, year, month, day) => {
+                const entries = App.getEntries();
+                const dayEntries = entries.filter(e => e.dateStr === dateStr);
+                const listEl = document.getElementById('cal-entry-list');
+                
+                if (dayEntries.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="text-center py-3">
+                            <p class="text-xs text-neutral-500 mb-2">No entries for ${dateStr}</p>
+                            <button onclick="Calendar.createEntryForDate(${year}, ${month}, ${day})" class="text-xs px-3 py-1.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition">
+                                <i class="fa-solid fa-pen text-[10px] mr-1"></i> Write for this day
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listEl.innerHTML = `<p class="text-[11px] font-bold mb-2 uppercase tracking-wider text-neutral-400">Entries on ${dateStr}</p>`;
+                dayEntries.forEach(e => {
+                    const displayTitle = e.title ? `<strong>${e.title}</strong> ${e.mood}` : `<i>Untitled</i> ${e.mood}`;
+                    listEl.innerHTML += `
+                        <div class="p-2.5 border border-neutral-200 rounded-xl mb-2 cursor-pointer hover:bg-neutral-50 transition" onclick="Calendar.openEntry('${e.id}')">
+                            <p class="text-sm font-medium mb-1">${displayTitle}</p>
+                            <p class="text-xs text-neutral-500 line-clamp-2">${e.snippet || '<i>Empty entry...</i>'}</p>
+                        </div>
+                    `;
+                });
+            };
+
+            const createEntryForDate = (year, month, day) => {
+                App.hideModal('calendar-modal');
+                const targetDate = new Date(year, month, day, 12, 0, 0);
+                App.openDiary();
+                App.createNewEntry(targetDate);
+            };
+
+            const openEntry = (id) => {
+                App.hideModal('calendar-modal');
+                App.openDiary();
+                App.loadEntry(id);
+            };
+
+            return { render, changeMonth, selectDay, openEntry, createEntryForDate };
+        })();
+
+        /**
+         * --- DEEP FULL-TEXT SEARCH MODULE ---
+         */
+        const Search = (function() {
+            const perform = async () => {
+                const query = document.getElementById('search-input').value.toLowerCase().trim();
+                const resultsEl = document.getElementById('search-results');
+                
+                if (query.length < 2) {
+                    resultsEl.innerHTML = '<p class="text-neutral-400 text-center py-6 text-xs">Type at least 2 characters to search across all entries...</p>';
+                    return;
+                }
+
+                const allEntries = await DB.getAll('entries');
+                const matches = allEntries.filter(e => {
+                    const titleMatch = (e.title || '').toLowerCase().includes(query);
+                    const dateMatch = (new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(e.createdAt))).toLowerCase().includes(query);
+                    const plainContent = (e.content || '').replace(/<[^>]+>/g, ' ').toLowerCase();
+                    const contentMatch = plainContent.includes(query);
+                    const moodMatch = (e.mood || '').toLowerCase().includes(query);
+                    return titleMatch || dateMatch || contentMatch || moodMatch;
+                });
+
+                if (matches.length === 0) {
+                    resultsEl.innerHTML = '<p class="text-neutral-500 text-center py-6 text-xs">No matching diary memories found.</p>';
+                    return;
+                }
+
+                resultsEl.innerHTML = '';
+                matches.sort((a, b) => b.createdAt - a.createdAt);
+
+                matches.forEach(e => {
+                    const dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(e.createdAt));
+                    const plainText = (e.content || '').replace(/<[^>]+>/g, ' ');
+                    const queryIndex = plainText.toLowerCase().indexOf(query);
+                    
+                    let snippet = '';
+                    if (queryIndex !== -1) {
+                        const start = Math.max(0, queryIndex - 35);
+                        const end = Math.min(plainText.length, queryIndex + query.length + 55);
+                        snippet = (start > 0 ? '...' : '') + plainText.substring(start, end) + (end < plainText.length ? '...' : '');
+                    } else {
+                        snippet = plainText.substring(0, 90) + (plainText.length > 90 ? '...' : '');
+                    }
+                    
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
+                    const highlightedSnippet = snippet.replace(regex, "<mark class='bg-yellow-200 px-0.5 rounded'>$1</mark>");
+                    const displayTitle = e.title ? e.title : 'Untitled Entry';
+
+                    resultsEl.innerHTML += `
+                        <div class="p-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition mb-2" onclick="Calendar.openEntry('${e.id}'); App.hideModal('search-modal');">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-semibold text-neutral-500">${dateStr}</span>
+                                <span class="text-sm">${e.mood || ''}</span>
+                            </div>
+                            <p class="text-sm font-bold text-neutral-900 mb-1">${displayTitle}</p>
+                            <p class="text-xs text-neutral-600 leading-relaxed">${highlightedSnippet || '<i>Empty entry...</i>'}</p>
+                        </div>
+                    `;
+                });
+            };
+
+            return { perform };
+        })();
+
+        // Bootstrap on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+
+        // Warn before leaving if changes are actively debouncing
+        window.addEventListener('beforeunload', (e) => {
+            if (document.getElementById('save-status').textContent === 'Saving...') {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
