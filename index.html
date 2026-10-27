@@ -58,31 +58,37 @@
             --accent-color: #6366f1;
         }
 
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important; /* Locks into one frame, removes page sliding & scrollbars */
+        }
+
         body {
             background-color: #121214;
             background-image: radial-gradient(circle at 50% 30%, #26262b 0%, #0e0e10 100%);
             color: var(--text-color);
             font-family: 'Lora', serif;
-            margin: 0;
-            overflow-x: hidden;
-            min-height: 100vh;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        /* Custom Scrollbar for internal paper scroll only */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(140, 140, 140, 0.3); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 140, 0.5); }
         
-        /* Book Perspective Container */
+        /* Book Container - Scales to fit screen height and width dynamically */
         .book-container {
             perspective: 1800px;
             width: 100%;
-            max-width: 1050px;
-            min-height: 640px;
+            height: 100%;
+            max-width: 1020px;
+            max-height: 100%;
             margin: 0 auto;
             position: relative;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s ease;
         }
 
         /* 3D Realistic Book Cover */
@@ -150,22 +156,21 @@
             pointer-events: auto;
         }
 
-        /* Paper Styles */
+        /* Paper Styles (Inner scroll only) */
         .paper-content {
-            height: calc(100vh - 270px);
-            min-height: 440px;
+            min-height: 100%;
             outline: none;
-            padding: 2rem 2.5rem;
+            padding: 1.25rem 1.75rem;
             line-height: 32px;
             position: relative;
-            font-size: 1.125rem;
+            font-size: 1.05rem;
             color: var(--text-color);
-            overflow-y: auto;
         }
 
         @media (min-width: 768px) {
             .paper-content {
-                padding: 2.5rem 4rem;
+                padding: 1.75rem 3.5rem;
+                font-size: 1.125rem;
             }
         }
 
@@ -231,34 +236,34 @@
         .paper-content ol { list-style: decimal inside; margin: 0.5rem 0; }
         .paper-content hr { border: none; border-top: 1px dashed var(--line-color); margin: 1.5rem 0; }
 
-        /* Satin Bookmark Ribbon */
+        /* Satin Bookmark Ribbon - Safely anchored at the top-right without covering buttons */
         .bookmark {
             position: absolute;
             top: -4px;
-            right: 2.5rem;
-            width: 32px;
-            height: 75px;
+            right: 0.85rem;
+            width: 24px;
+            height: 44px;
             background: linear-gradient(180deg, #c2410c 0%, #ea580c 70%, #9a3412 100%);
-            z-index: 30;
-            box-shadow: 2px 4px 10px rgba(0,0,0,0.35);
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 14px), 0 100%);
+            z-index: 20;
+            box-shadow: 1px 3px 6px rgba(0,0,0,0.3);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 10px), 0 100%);
             cursor: pointer;
-            transition: transform 0.3s ease, filter 0.3s ease;
+            transition: transform 0.25s ease, filter 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255,255,255,0.9);
-            font-size: 0.75rem;
-            padding-bottom: 12px;
+            color: rgba(255,255,255,0.95);
+            font-size: 0.65rem;
+            padding-bottom: 6px;
         }
 
         .bookmark:hover {
-            transform: translateY(6px);
+            transform: translateY(4px);
         }
 
         .bookmark.bookmarked {
             background: linear-gradient(180deg, #b45309 0%, #f59e0b 70%, #78350f 100%);
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
             color: #ffffff;
         }
 
@@ -323,63 +328,63 @@
         }
     </style>
 </head>
-<body data-theme="classic" class="flex flex-col min-h-screen select-none">
+<body data-theme="classic" class="h-screen h-[100dvh] flex flex-col overflow-hidden select-none">
 
     <!-- Global App Header -->
-    <header class="w-full flex justify-between items-center px-6 py-3 text-white/80 z-40 print:hidden relative">
-        <div class="font-semibold text-lg flex items-center gap-2 cursor-pointer hover:text-white transition" onclick="App.closeDiary()">
+    <header class="w-full h-12 sm:h-14 flex-shrink-0 flex justify-between items-center px-4 sm:px-6 text-white/80 z-40 print:hidden relative border-b border-white/5">
+        <div class="font-semibold text-base sm:text-lg flex items-center gap-2 cursor-pointer hover:text-white transition" onclick="App.closeDiary()">
             <i class="fa-solid fa-book-bookmark text-amber-500"></i> 
             <span class="tracking-wide font-['Playfair_Display']">Daily Diary</span>
         </div>
         
-        <div class="flex items-center gap-3">
-            <button onclick="App.showModal('search-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Search Memories (Ctrl+F)">
-                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button onclick="App.showModal('search-modal')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Search Memories (Ctrl+F)">
+                <i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i>
             </button>
-            <button onclick="App.showModal('calendar-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Calendar Archive">
-                <i class="fa-regular fa-calendar-days text-sm"></i>
+            <button onclick="App.showModal('calendar-modal')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Calendar Archive">
+                <i class="fa-regular fa-calendar-days text-xs sm:text-sm"></i>
             </button>
-            <button onclick="App.showModal('settings-modal')" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Settings">
-                <i class="fa-solid fa-sliders text-sm"></i>
+            <button onclick="App.showModal('settings-modal')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition" title="Settings">
+                <i class="fa-solid fa-sliders text-xs sm:text-sm"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-grow flex items-center justify-center p-3 sm:p-6" id="diary-app">
+    <!-- Main Container: Fixed in one frame with no outer sliding -->
+    <main class="flex-1 min-h-0 w-full p-2 sm:p-4 md:p-6 flex items-center justify-center overflow-hidden" id="diary-app">
         
-        <div class="book-container" id="book-container">
+        <div class="book-container w-full h-full max-w-5xl max-h-[820px] relative" id="book-container">
             
             <!-- Book Cover View (Closed) -->
-            <div id="cover-view" class="cover w-full h-[620px] sm:h-[680px] flex items-center justify-center p-8 cursor-pointer shadow-2xl" onclick="App.openDiary()">
-                <div class="cover-content w-full h-full flex flex-col items-center justify-center p-8 text-center text-white/90 relative">
+            <div id="cover-view" class="cover w-full h-full flex items-center justify-center p-6 sm:p-8 cursor-pointer shadow-2xl" onclick="App.openDiary()">
+                <div class="cover-content w-full h-full flex flex-col items-center justify-center p-6 sm:p-8 text-center text-white/90 relative">
                     
                     <!-- Decorative Crest / Icon -->
-                    <div class="w-16 h-16 rounded-full border border-amber-400/40 flex items-center justify-center mb-6 text-amber-300/80 bg-white/5">
-                        <i class="fa-solid fa-feather-pointed text-2xl"></i>
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-amber-400/40 flex items-center justify-center mb-4 sm:mb-6 text-amber-300/80 bg-white/5">
+                        <i class="fa-solid fa-feather-pointed text-xl sm:text-2xl"></i>
                     </div>
 
-                    <h1 id="ui-cover-title" class="text-4xl sm:text-6xl font-['Playfair_Display'] mb-4 italic tracking-wide text-amber-100 drop-shadow-md">My Private Diary</h1>
-                    <p id="ui-cover-subtitle" class="text-lg sm:text-xl font-light text-amber-200/80 mb-10 max-w-md">Thoughts, Memories, and Stories</p>
+                    <h1 id="ui-cover-title" class="text-3xl sm:text-5xl md:text-6xl font-['Playfair_Display'] mb-3 sm:mb-4 italic tracking-wide text-amber-100 drop-shadow-md">My Private Diary</h1>
+                    <p id="ui-cover-subtitle" class="text-base sm:text-lg md:text-xl font-light text-amber-200/80 mb-6 sm:mb-10 max-w-md">Thoughts, Memories, and Stories</p>
                     
-                    <p id="ui-cover-author" class="text-xl sm:text-2xl font-['Caveat'] text-amber-300/90 mt-auto">By Me</p>
+                    <p id="ui-cover-author" class="text-lg sm:text-2xl font-['Caveat'] text-amber-300/90 mt-auto">By Me</p>
                     
-                    <div class="mt-8 px-7 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition duration-300 backdrop-blur-sm border border-amber-300/30 flex items-center gap-2 text-sm text-amber-100 shadow-lg">
+                    <div class="mt-6 sm:mt-8 px-6 sm:px-7 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition duration-300 backdrop-blur-sm border border-amber-300/30 flex items-center gap-2 text-xs sm:text-sm text-amber-100 shadow-lg">
                         <i class="fa-solid fa-book-open"></i> Click to Open Diary
                     </div>
                 </div>
             </div>
 
-            <!-- Open Diary Spread View -->
-            <div id="open-view" class="diary-spread w-full h-full flex flex-col">
+            <!-- Open Diary Spread View (Fits inside container without sliding) -->
+            <div id="open-view" class="diary-spread w-full h-full flex flex-col overflow-hidden">
                 
-                <!-- Satin Ribbon Bookmark (Clickable: Toggles Favorite) -->
+                <!-- Satin Ribbon Bookmark (Safely in top right corner margin) -->
                 <div class="bookmark print:hidden" id="bookmark-ribbon" title="Bookmark this entry" onclick="App.toggleBookmark()">
-                    <i class="fa-solid fa-star text-xs" id="bookmark-icon"></i>
+                    <i class="fa-solid fa-star text-[10px]" id="bookmark-icon"></i>
                 </div>
 
                 <!-- Floating Stationery Drawer -->
-                <div id="stationery-toolbar" class="hidden absolute top-20 right-4 sm:right-8 w-max max-w-[92vw] bg-white/95 backdrop-blur-md shadow-2xl border border-neutral-200 rounded-xl z-40 print:hidden p-3 flex-col gap-2 transition-all">
+                <div id="stationery-toolbar" class="hidden absolute top-16 right-3 sm:right-6 w-max max-w-[calc(100vw-2rem)] sm:max-w-md bg-white/95 backdrop-blur-md shadow-2xl border border-neutral-200 rounded-xl z-50 print:hidden p-3 flex-col gap-2 transition-all">
                     <!-- Row 1: Typography & Tools -->
                     <div class="flex items-center gap-1.5 border-b pb-2 mb-1 border-neutral-200 flex-wrap">
                         <select onchange="Editor.format('fontName', this.value)" class="p-1 rounded bg-neutral-100 border border-neutral-300 text-xs focus:outline-none text-neutral-700">
@@ -461,53 +466,53 @@
                     </div>
                 </div>
 
-                <!-- Page Header (Navigation & Date) -->
-                <div class="w-full flex flex-col px-6 sm:px-10 pt-5 pb-2 z-10 border-b border-neutral-200/50">
+                <!-- Page Header (Navigation, Date, Title & Mood - With pr-12 padding to prevent bookmark overlap) -->
+                <div class="w-full flex-shrink-0 flex flex-col px-4 sm:px-8 pr-12 sm:pr-14 pt-3 sm:pt-4 pb-2 z-10 border-b border-neutral-200/50">
                     <div class="w-full flex justify-between items-center">
                         
                         <!-- Left Navigation (Close & Previous) -->
-                        <div class="flex items-center gap-1.5 print:hidden">
-                            <button onclick="App.closeDiary()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Close Diary (Esc)">
-                                <i class="fa-solid fa-book"></i>
+                        <div class="flex items-center gap-1 sm:gap-1.5 print:hidden">
+                            <button onclick="App.closeDiary()" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Close Diary (Esc)">
+                                <i class="fa-solid fa-book text-xs sm:text-sm"></i>
                             </button>
-                            <button onclick="App.navigateEntry(1)" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Previous Entry (Older)">
-                                <i class="fa-solid fa-chevron-left text-sm"></i>
+                            <button onclick="App.navigateEntry(1)" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Previous Entry (Older)">
+                                <i class="fa-solid fa-chevron-left text-xs sm:text-sm"></i>
                             </button>
                         </div>
                         
                         <!-- Center: Date (Click to change date or open calendar) -->
-                        <div class="flex items-center gap-2 group cursor-pointer" onclick="App.openDatePicker()" title="Click to change entry date">
-                            <span id="entry-date-display" class="font-['Caveat'] text-2xl sm:text-3xl text-neutral-700 font-semibold group-hover:text-black transition">
+                        <div class="flex items-center gap-1.5 group cursor-pointer" onclick="App.openDatePicker()" title="Click to change entry date">
+                            <span id="entry-date-display" class="font-['Caveat'] text-xl sm:text-2xl md:text-3xl text-neutral-700 font-semibold group-hover:text-black transition truncate max-w-[200px] sm:max-w-none">
                                 Today
                             </span>
-                            <i class="fa-regular fa-calendar text-xs text-neutral-400 group-hover:text-neutral-700 transition"></i>
+                            <i class="fa-regular fa-calendar text-[11px] text-neutral-400 group-hover:text-neutral-700 transition"></i>
                         </div>
                         
                         <!-- Right Navigation (New, Delete, Next, Stationery) -->
-                        <div class="flex items-center gap-1.5 print:hidden">
-                            <button onclick="App.createNewEntry()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="New Blank Entry (Ctrl+N)">
-                                <i class="fa-solid fa-plus text-sm"></i>
+                        <div class="flex items-center gap-1 sm:gap-1.5 print:hidden">
+                            <button onclick="App.createNewEntry()" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="New Blank Entry (Ctrl+N)">
+                                <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
                             </button>
-                            <button onclick="App.navigateEntry(-1)" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Next Entry (Newer)">
-                                <i class="fa-solid fa-chevron-right text-sm"></i>
+                            <button onclick="App.navigateEntry(-1)" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-neutral-500 hover:text-neutral-900 hover:bg-black/5 transition" title="Next Entry (Newer)">
+                                <i class="fa-solid fa-chevron-right text-xs sm:text-sm"></i>
                             </button>
-                            <button onclick="App.deleteCurrentEntry()" class="w-8 h-8 flex items-center justify-center rounded-full text-neutral-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete Entry">
-                                <i class="fa-regular fa-trash-can text-sm"></i>
+                            <button onclick="App.deleteCurrentEntry()" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-neutral-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete Entry">
+                                <i class="fa-regular fa-trash-can text-xs sm:text-sm"></i>
                             </button>
                             
-                            <div class="w-px h-5 bg-neutral-300 mx-1"></div>
+                            <div class="w-px h-4 sm:h-5 bg-neutral-300 mx-0.5 sm:mx-1"></div>
                             
-                            <button onclick="document.getElementById('stationery-toolbar').classList.toggle('hidden')" class="w-8 h-8 rounded-full bg-neutral-800 text-white shadow-md hover:bg-neutral-700 transition flex items-center justify-center hover:scale-105" title="Toggle Stationery Box">
-                                <i class="fa-solid fa-pen-nib text-xs"></i>
+                            <button onclick="document.getElementById('stationery-toolbar').classList.toggle('hidden')" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-800 text-white shadow-md hover:bg-neutral-700 transition flex items-center justify-center hover:scale-105" title="Toggle Stationery Box">
+                                <i class="fa-solid fa-pen-nib text-[10px] sm:text-xs"></i>
                             </button>
                         </div>
                     </div>
                     
                     <!-- Title and Mood Bar -->
-                    <div class="flex items-center gap-3 print:hidden mt-3">
-                        <input type="text" id="entry-title" placeholder="Give this memory a title..." class="text-xl sm:text-2xl font-bold font-['Playfair_Display'] bg-transparent border-none outline-none flex-grow placeholder-neutral-400/70 text-neutral-900" oninput="App.saveCurrentEntry()">
+                    <div class="flex items-center gap-2 sm:gap-3 print:hidden mt-2 sm:mt-3">
+                        <input type="text" id="entry-title" placeholder="Give this memory a title..." class="text-lg sm:text-2xl font-bold font-['Playfair_Display'] bg-transparent border-none outline-none flex-grow placeholder-neutral-400/70 text-neutral-900 min-w-0" oninput="App.saveCurrentEntry()">
                         
-                        <select id="entry-mood" class="bg-white/60 border border-neutral-300/80 rounded-lg px-2 py-1 text-sm outline-none cursor-pointer backdrop-blur-sm text-neutral-700 shadow-sm" onchange="App.saveCurrentEntry()">
+                        <select id="entry-mood" class="bg-white/60 border border-neutral-300/80 rounded-lg px-2 py-1 text-xs sm:text-sm outline-none cursor-pointer backdrop-blur-sm text-neutral-700 shadow-sm flex-shrink-0" onchange="App.saveCurrentEntry()">
                             <option value="">Mood...</option>
                             <option value="😊">😊 Happy</option>
                             <option value="😌">😌 Peaceful</option>
@@ -522,8 +527,8 @@
                     </div>
                 </div>
 
-                <!-- Editor Area (Scrollable Paper) -->
-                <div class="flex-grow relative overflow-y-auto" id="pdf-content">
+                <!-- Editor Area (Scrollable Paper - Only this scrolls internally) -->
+                <div class="flex-1 min-h-0 relative overflow-y-auto" id="pdf-content">
                     
                     <!-- Formatted Print/PDF Header -->
                     <div class="hidden print:block text-center pt-8 pb-6 border-b border-neutral-300 mb-6" id="print-header">
@@ -537,7 +542,7 @@
                 </div>
                 
                 <!-- Bottom Page Status Bar -->
-                <div class="w-full flex justify-between items-center px-6 sm:px-10 py-3 text-xs text-neutral-500 font-sans z-10 print:hidden border-t border-neutral-200/50 bg-black/[0.01]">
+                <div class="w-full flex-shrink-0 flex justify-between items-center px-4 sm:px-8 py-2 text-xs text-neutral-500 font-sans z-10 print:hidden border-t border-neutral-200/50 bg-black/[0.01]">
                     <span id="page-num-left" class="font-medium">Page 1</span>
                     
                     <div class="flex items-center gap-3">
